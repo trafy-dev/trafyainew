@@ -162,17 +162,6 @@
      Scroll reveals (IntersectionObserver, no GSAP dependency needed)
      ------------------------------------------------------------------ */
 
-  // Force redirect for Take Assessment links to bypass cached HTML
-  var takeAssessmentLinks = document.querySelectorAll('a');
-  takeAssessmentLinks.forEach(function(link) {
-    if (link.textContent.trim() === 'Take Assessment' || link.textContent.includes('Take Assessment to Check')) {
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
-        window.location.href = 'http://localhost:5173';
-      });
-    }
-  });
-
   var revealEls = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window && !reduceMotion) {
     var io = new IntersectionObserver(
