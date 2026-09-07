@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trafy: Assessment Dashboard</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/assessment.css">
+  <!-- Monaco Editor script will be loaded dynamically -->
+</head>
+<body class="assessment-body">
+
+  <div class="dashboard-layout">
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar__brand">
+        <img src="assets/img/trafy-logo.png" alt="Trafy Logo" class="sidebar__logo">
+      </div>
+      <nav class="sidebar__nav">
+        <button class="sidebar__item active" data-target="dashboard">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          Overview
+        </button>
+        <button class="sidebar__item" data-target="master-assessment">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Master Assessment
+        </button>
+        <button class="sidebar__item" data-target="leaderboard">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+          Leaderboard
+        </button>
+      </nav>
+      <div class="sidebar__footer">
+        <div class="user-profile">
+          <div class="avatar">JD</div>
+          <div class="user-info">
+            <span class="user-name">John Doe</span>
+            <span class="user-status">Candidate</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="dashboard-main">
+      
+      <!-- Overview Section -->
+      <section id="dashboard" class="dashboard-section active">
+        <header class="section-header">
+          <h1>Welcome to Trafy Assessments</h1>
+          <p>Complete your Master Assessment to rank on the leaderboard.</p>
+        </header>
+        <div class="bento-wrap assessment-bento">
+          <div class="bento">
+             <div class="bento__cell">
+               <span class="bento__label">Status</span>
+               <span class="bento__value" style="color: #4F8CFF;">Pending</span>
+             </div>
+             <div class="bento__cell">
+               <span class="bento__label">Questions</span>
+               <span class="bento__value">45 MCQ + 2 DSA</span>
+             </div>
+             <div class="bento__cell">
+               <span class="bento__label">Time Limit</span>
+               <span class="bento__value">90 Mins</span>
+             </div>
+          </div>
+          <button class="btn btn--primary btn--lg mt-4" id="startAssessmentBtn">Start Master Assessment</button>
+        </div>
+      </section>
+
+      <!-- Master Assessment Section -->
+      <section id="master-assessment" class="dashboard-section">
+        <header class="section-header assessment-header">
+          <div class="assessment-title">
+            <h1>Master Assessment</h1>
+            <span class="timer" id="timer">01:30:00</span>
+          </div>
+          <div class="assessment-progress">
+             <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
+             <span id="progressText">0 / 47</span>
+          </div>
+        </header>
+        
+        <div class="assessment-content">
+          <!-- MCQ Question Area -->
+          <div id="mcqArea" class="question-area active">
+             <h3 class="question-number">Question <span id="qNum">1</span> of 45</h3>
+             <p class="question-text" id="mcqText">Loading question...</p>
+             <div class="options-grid" id="optionsGrid">
+                <!-- Options populated by JS -->
+             </div>
+             <div class="question-actions">
+               <button class="btn btn--ghost" id="prevMcqBtn">Previous</button>
+               <button class="btn btn--primary" id="nextMcqBtn">Next</button>
+             </div>
+          </div>
+
+          <!-- DSA Question Area -->
+          <div id="dsaArea" class="question-area">
+             <div class="dsa-layout">
+                <div class="dsa-problem">
+                   <h3 class="question-number">DSA Challenge <span id="dsaNum">1</span> of 2</h3>
+                   <h2 id="dsaTitle">Loading...</h2>
+                   <div class="problem-description" id="dsaDesc"></div>
+                </div>
+                <div class="dsa-editor-wrapper">
+                   <div class="editor-header">
+                      <select class="language-select"><option>JavaScript (Node.js)</option></select>
+                      <button class="btn btn--sm btn--ghost" id="runCodeBtn">Run Code</button>
+                   </div>
+                   <div id="monacoEditor" class="editor-container"></div>
+                </div>
+             </div>
+             <div class="question-actions">
+               <button class="btn btn--ghost" id="prevDsaBtn">Previous</button>
+               <button class="btn btn--primary" id="nextDsaBtn">Next / Submit</button>
+             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Leaderboard Section -->
+      <section id="leaderboard" class="dashboard-section">
+        <header class="section-header">
+          <h1>Global Leaderboard</h1>
+          <p>Live rankings updated in real-time.</p>
+        </header>
+        <div class="leaderboard-table-wrapper">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Candidate</th>
+                <th>Score</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody">
+              <!-- Realtime data populated here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+  <!-- Monaco Editor Loader -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
+  <script src="js/assessment.js"></script>
+</body>
+</html>

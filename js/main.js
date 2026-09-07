@@ -121,19 +121,58 @@
       applySubmit.disabled = true;
       applySubmitLabel.textContent = 'Submitting…';
 
-      // TODO: replace with a real submit, e.g.:
-      // fetch('https://formspree.io/f/YOUR_ID', { method: 'POST', body: new FormData(applyForm), headers: { Accept: 'application/json' } })
-      window.setTimeout(function () {
+      // Send data to Google Forms
+      var googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfnt08EgsikmotyYxcCPPUpQCZI3XID_8yVVHkLHyX9ertJXA/formResponse';
+      var formData = new FormData(applyForm);
+      var googleData = new URLSearchParams();
+      
+      // Map local form fields to Google Form entry IDs
+      googleData.append('entry.451332127', formData.get('name') || '');
+      googleData.append('entry.862746031', formData.get('email') || '');
+      googleData.append('entry.937863818', formData.get('phone') || '');
+      
+      // Map the dropdown value to exactly match the Google Form option text
+      var rawGoal = formData.get('goal');
+      var mappedGoal = '';
+      if (rawGoal === 'startup') mappedGoal = 'Launching a startup';
+      else if (rawGoal === 'job') mappedGoal = 'Getting hired in AI';
+      else if (rawGoal === 'explore') mappedGoal = 'Still exploring';
+      
+      googleData.append('entry.1729132919', mappedGoal);
+      
+      fetch(googleFormUrl, {
+        method: 'POST',
+        mode: 'no-cors', // Essential for submitting to Google Forms from a browser without CORS errors
+        body: googleData // Browser will automatically set correct Content-Type for URLSearchParams
+      }).then(function() {
         applyForm.classList.add('is-sent');
         applySubmit.disabled = false;
         applySubmitLabel.textContent = 'Submit Application';
-      }, 500);
+      }).catch(function(error) {
+        console.error("Form submission error:", error);
+        applyNote.textContent = 'Network error. Please try again later.';
+        applyNote.className = 'apply__form-note is-error';
+        applySubmit.disabled = false;
+        applySubmitLabel.textContent = 'Submit Application';
+      });
     });
   }
 
   /* ------------------------------------------------------------------
      Scroll reveals (IntersectionObserver, no GSAP dependency needed)
      ------------------------------------------------------------------ */
+
+  // Force redirect for Take Assessment links to bypass cached HTML
+  var takeAssessmentLinks = document.querySelectorAll('a');
+  takeAssessmentLinks.forEach(function(link) {
+    if (link.textContent.trim() === 'Take Assessment' || link.textContent.includes('Take Assessment to Check')) {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = 'http://localhost:5173';
+      });
+    }
+  });
+
   var revealEls = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window && !reduceMotion) {
     var io = new IntersectionObserver(
