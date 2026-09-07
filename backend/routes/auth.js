@@ -1,5 +1,5 @@
 const express = require('express');
-const { requireAuth, ensureProfile } = require('../middleware/auth');
+const { requireAuth, ensureProfile, isAdminUser } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errors');
 const { supabaseAdmin } = require('../lib/supabase');
 const { fromSupabase } = require('../middleware/errors');
@@ -21,7 +21,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const { data, error } = await supabaseAdmin
       .from('profiles')
-      .select('id, email, display_name, avatar_url, created_at')
+      .select('id, email, display_name, avatar_url, country, university, created_at')
       .eq('id', req.user.id)
       .maybeSingle();
 
@@ -32,29 +32,51 @@ router.get(
       email: req.user.email,
       displayName: (data && data.display_name) || req.user.displayName,
       avatarUrl: (data && data.avatar_url) || req.user.avatarUrl,
+      country: (data && data.country) || null,
+      university: (data && data.university) || null,
+      isAdmin: isAdminUser(req.user),
       createdAt: data && data.created_at,
     });
   })
 );
 
-/** Let a candidate correct the name shown on the leaderboard. */
+/**
+ * Lets a candidate correct their display name, or fill in country/university
+ * (asked for once after first login, shown again on future logins until set).
+ * Any field omitted from the body is left unchanged.
+ */
 router.patch(
   '/me',
   requireAuth,
   ensureProfile,
   asyncHandler(async (req, res) => {
-    const raw = (req.body && req.body.displayName) || '';
-    const displayName = String(raw).trim().slice(0, 60);
+    const body = req.body || {};
+    const patch = { updated_at: new Date().toISOString() };
+
+    if (body.displayName !== undefined) {
+      patch.display_name = String(body.displayName).trim().slice(0, 60) || null;
+    }
+    if (body.country !== undefined) {
+      patch.country = String(body.country).trim().slice(0, 80) || null;
+    }
+    if (body.university !== undefined) {
+      patch.university = String(body.university).trim().slice(0, 160) || null;
+    }
 
     const { data, error } = await supabaseAdmin
       .from('profiles')
-      .update({ display_name: displayName || null, updated_at: new Date().toISOString() })
+      .update(patch)
       .eq('id', req.user.id)
-      .select('id, display_name')
+      .select('id, display_name, country, university')
       .single();
 
     if (error) throw fromSupabase(error, 'update profile');
-    res.json({ id: data.id, displayName: data.display_name });
+    res.json({
+      id: data.id,
+      displayName: data.display_name,
+      country: data.country,
+      university: data.university,
+    });
   })
 );
 

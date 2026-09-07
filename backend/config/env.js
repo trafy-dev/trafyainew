@@ -43,6 +43,13 @@ const env = {
     .filter(Boolean),
 
   assessmentSlug: optional('ASSESSMENT_SLUG', 'cohort-26'),
+
+  // Accounts allowed to see the leaderboard. Everyone else gets a 403 from
+  // /api/leaderboard, and the frontend hides the nav item entirely.
+  adminEmails: optional('ADMIN_EMAILS', 'build.trafy@gmail.com')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean),
 };
 
 env.isProd = env.nodeEnv === 'production';

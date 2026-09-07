@@ -1,7 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
+import { Sun, Moon } from 'lucide-react';
 import { api, apiError } from '../lib/api';
+
+const EDITOR_THEME_KEY = 'trafy_dsa_editor_theme';
 
 const AUTOSAVE_DEBOUNCE_MS = 800;
 
@@ -31,6 +34,24 @@ export default function MasterAssessment() {
   const [isGridOpen, setIsGridOpen] = useState(true);
   const [saveState, setSaveState] = useState('idle');
   const [submitting, setSubmitting] = useState(false);
+
+  // The overall app is light-themed, but a code editor genuinely benefits
+  // from its own dark option — candidates who prefer it can toggle just the
+  // editor, independent of everything else.
+  const [editorTheme, setEditorTheme] = useState(() => {
+    try {
+      return localStorage.getItem(EDITOR_THEME_KEY) === 'light' ? 'light' : 'vs-dark';
+    } catch {
+      return 'vs-dark';
+    }
+  });
+  const toggleEditorTheme = () => {
+    setEditorTheme((prev) => {
+      const next = prev === 'vs-dark' ? 'light' : 'vs-dark';
+      try { localStorage.setItem(EDITOR_THEME_KEY, next); } catch { /* ignore */ }
+      return next;
+    });
+  };
 
   // Refs keep the latest values reachable from timers without stale closures —
   // the previous implementation auto-submitted an empty paper on timeout
@@ -358,17 +379,25 @@ export default function MasterAssessment() {
                     dangerouslySetInnerHTML={{ __html: currentDsa?.description || '' }}
                   />
                 </div>
-                <div className="dsa-editor-wrapper">
+                <div className={`dsa-editor-wrapper theme-${editorTheme === 'vs-dark' ? 'dark' : 'light'}`}>
                   <div className="editor-header">
                     <select className="language-select" disabled>
                       <option>JavaScript (Node.js)</option>
                     </select>
+                    <button
+                      type="button"
+                      className="editor-theme-toggle"
+                      onClick={toggleEditorTheme}
+                      title={editorTheme === 'vs-dark' ? 'Switch editor to light mode' : 'Switch editor to dark mode'}
+                    >
+                      {editorTheme === 'vs-dark' ? <Sun size={16} /> : <Moon size={16} />}
+                    </button>
                   </div>
                   <div className="editor-container">
                     <Editor
                       height="100%"
                       defaultLanguage="javascript"
-                      theme="vs-dark"
+                      theme={editorTheme}
                       value={dsaCode[currentDsa?.id] ?? ''}
                       onChange={(val) => editCode(currentDsa.id, val)}
                       options={{ minimap: { enabled: false }, fontSize: 14 }}
