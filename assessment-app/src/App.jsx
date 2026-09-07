@@ -7,9 +7,11 @@ import MasterAssessment from './components/MasterAssessment';
 import Leaderboard from './components/Leaderboard';
 import Results from './components/Results';
 import Login from './components/Login';
+import ResetPassword from './components/ResetPassword';
+import CompleteProfile from './components/CompleteProfile';
 
 function Shell() {
-  const { user, loading } = useAuth();
+  const { user, loading, passwordRecovery, profile, isAdmin } = useAuth();
 
   if (loading) {
     return (
@@ -19,7 +21,16 @@ function Shell() {
     );
   }
 
+  // Checked before the normal logged-in state: a recovery-link click signs
+  // the user in, but they must set a new password before using the app.
+  if (passwordRecovery) return <ResetPassword />;
+
   if (!user) return <Login />;
+
+  // Prompt once per session for country/university if not set yet — but
+  // only after the profile has actually loaded, so it doesn't flash before
+  // we know whether it's needed.
+  const needsProfilePrompt = profile && !profile.country && !profile.university;
 
   return (
     <div className="dashboard-layout">
@@ -28,11 +39,15 @@ function Shell() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/assessment" element={<MasterAssessment />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route
+            path="/leaderboard"
+            element={isAdmin ? <Leaderboard /> : <Navigate to="/" replace />}
+          />
           <Route path="/results" element={<Results />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+      {needsProfilePrompt && <CompleteProfile />}
     </div>
   );
 }

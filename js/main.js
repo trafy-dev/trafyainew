@@ -1,6 +1,20 @@
 (function () {
   'use strict';
 
+  /* ------------------------------------------------------------------
+     Points every [data-app-link] element (the "Login to start" buttons on
+     take-assessment.html) at the assessment app. Production URL by default;
+     when this site itself is opened from localhost, point at the local
+     assessment-app dev server instead (run it with `npm run dev` from
+     assessment-app/, which is pinned to port 5173) so the whole flow can be
+     tested end to end before pushing, without editing any file.
+     ------------------------------------------------------------------ */
+  var isLocalHost = /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
+  var appUrl = isLocalHost ? 'http://localhost:5173' : 'https://trafyainew-3p6a.vercel.app';
+  document.querySelectorAll('[data-app-link]').forEach(function (el) {
+    el.href = appUrl;
+  });
+
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ------------------------------------------------------------------

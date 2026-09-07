@@ -18,9 +18,16 @@ create table if not exists public.profiles (
   email        text not null,
   display_name text,
   avatar_url   text,
+  country      text,
+  university   text,
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now()
 );
+
+-- Adds the columns above to a profiles table that already existed before
+-- they were introduced. Safe to re-run; a no-op once the columns exist.
+alter table public.profiles add column if not exists country    text;
+alter table public.profiles add column if not exists university text;
 
 -- Auto-create a profile whenever a user signs up (email OR Google).
 -- Google puts the name in raw_user_meta_data->>'full_name' or 'name'.
@@ -175,9 +182,15 @@ create policy "attempts: read own" on public.assessment_attempts
 
 -- ---------------------------------------------------------------------
 -- leaderboard — best submitted attempt per candidate.
--- Exposes display_name and score only; never email.
--- Served through the authenticated API, not read directly by clients.
+-- Exposes display_name, country and university; never email.
+-- Admin-only: served through the authenticated API behind requireAdmin,
+-- not read directly by clients (and there is no RLS select policy either).
 -- ---------------------------------------------------------------------
+-- country/university are appended at the end, not inserted between existing
+-- columns — CREATE OR REPLACE VIEW only allows adding columns at the end;
+-- reordering an existing column list fails with "cannot change name of view
+-- column". A plain DROP + CREATE would also work, but this is idempotent
+-- either way a view happens to already exist.
 create or replace view public.leaderboard as
 select distinct on (a.user_id)
   a.user_id,
@@ -185,7 +198,9 @@ select distinct on (a.user_id)
   a.total_score,
   a.max_score,
   a.correct_count,
-  a.submitted_at
+  a.submitted_at,
+  p.country,
+  p.university
 from public.assessment_attempts a
 join public.profiles p on p.id = a.user_id
 where a.status = 'submitted'

@@ -413,6 +413,8 @@ async function getLeaderboard(limit = 50) {
     rank: index + 1,
     userId: row.user_id,
     displayName: row.display_name || 'Anonymous Candidate',
+    country: row.country || null,
+    university: row.university || null,
     totalScore: row.total_score,
     maxScore: row.max_score,
     correctCount: row.correct_count,

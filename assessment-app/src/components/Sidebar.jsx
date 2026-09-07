@@ -12,7 +12,7 @@ const initials = (name = '') =>
     .join('') || 'C';
 
 export default function Sidebar() {
-  const { displayName, avatarUrl, user, signOut } = useAuth();
+  const { displayName, avatarUrl, user, signOut, isAdmin } = useAuth();
 
   const link = ({ isActive }) => `sidebar__item ${isActive ? 'active' : ''}`;
 
@@ -29,9 +29,11 @@ export default function Sidebar() {
         <NavLink to="/assessment" className={link}>
           <PenTool className="icon" /> Assessment
         </NavLink>
-        <NavLink to="/leaderboard" className={link}>
-          <Trophy className="icon" /> Leaderboard
-        </NavLink>
+        {isAdmin && (
+          <NavLink to="/leaderboard" className={link}>
+            <Trophy className="icon" /> Leaderboard
+          </NavLink>
+        )}
         <NavLink to="/results" className={link}>
           <History className="icon" /> Results
         </NavLink>
