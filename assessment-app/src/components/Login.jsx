@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { isConfigured } from '../lib/supabase';
 
@@ -14,11 +15,12 @@ function GoogleMark() {
 }
 
 export default function Login() {
-  const { signInWithGoogle, signInWithPassword, signUpWithPassword } = useAuth();
-  const [mode, setMode] = useState('signin');
+  const { signInWithGoogle, signInWithPassword, signUpWithPassword, sendPasswordReset } = useAuth();
+  const [mode, setMode] = useState('signin'); // 'signin' | 'signup' | 'forgot'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -34,10 +36,30 @@ export default function Login() {
     // On success the browser redirects to Google, so no cleanup needed.
   };
 
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setNotice('');
+
+    if (!email.trim()) {
+      setError('Enter your email address.');
+      return;
+    }
+
+    setBusy(true);
+    const { error: err } = await sendPasswordReset(email.trim());
+    setBusy(false);
+
+    if (err) setError(err.message);
+    else setNotice('Check your email for a link to reset your password.');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setNotice('');
+
+    if (mode === 'forgot') return handleForgotPassword(e);
 
     if (!email.trim() || !password) {
       setError('Enter your email and password.');
@@ -73,10 +95,12 @@ export default function Login() {
       <div className="auth-card">
         <img src="/trafy-logo.png" alt="Trafy" className="auth-logo" />
         <h1 className="auth-title">
-          {mode === 'signin' ? 'Sign in to continue' : 'Create your account'}
+          {mode === 'signin' ? 'Sign in to continue' : mode === 'signup' ? 'Create your account' : 'Reset your password'}
         </h1>
         <p className="auth-sub">
-          Your assessment, progress and results are saved to your account.
+          {mode === 'forgot'
+            ? "Enter the email on your account and we'll send you a reset link."
+            : 'Your assessment, progress and results are saved to your account.'}
         </p>
 
         {!isConfigured && (
@@ -87,17 +111,21 @@ export default function Login() {
           </div>
         )}
 
-        <button
-          type="button"
-          className="auth-google"
-          onClick={handleGoogle}
-          disabled={busy || !isConfigured}
-        >
-          <GoogleMark />
-          Continue with Google
-        </button>
+        {mode !== 'forgot' && (
+          <>
+            <button
+              type="button"
+              className="auth-google"
+              onClick={handleGoogle}
+              disabled={busy || !isConfigured}
+            >
+              <GoogleMark />
+              Continue with Google
+            </button>
 
-        <div className="auth-divider"><span>or</span></div>
+            <div className="auth-divider"><span>or</span></div>
+          </>
+        )}
 
         <form onSubmit={handleSubmit} className="auth-form">
           {mode === 'signup' && (
@@ -125,38 +153,78 @@ export default function Login() {
             />
           </label>
 
-          <label className="auth-field">
-            <span>Password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={mode === 'signup' ? 'At least 8 characters' : '••••••••'}
-              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-              required
-            />
-          </label>
+          {mode !== 'forgot' && (
+            <label className="auth-field">
+              <span>Password</span>
+              <div className="auth-password-wrap">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={mode === 'signup' ? 'At least 8 characters' : '••••••••'}
+                  autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                  required
+                />
+                <button
+                  type="button"
+                  className="auth-password-toggle"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </label>
+          )}
+
+          {mode === 'signin' && (
+            <button
+              type="button"
+              className="auth-forgot-link"
+              onClick={() => { setMode('forgot'); setError(''); setNotice(''); }}
+            >
+              Forgot password?
+            </button>
+          )}
 
           {error && <div className="auth-alert auth-alert--error">{error}</div>}
           {notice && <div className="auth-alert auth-alert--ok">{notice}</div>}
 
           <button type="submit" className="btn btn--primary btn--lg auth-submit" disabled={busy || !isConfigured}>
-            {busy ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Create account'}
+            {busy
+              ? 'Please wait…'
+              : mode === 'signin'
+                ? 'Sign in'
+                : mode === 'signup'
+                  ? 'Create account'
+                  : 'Send reset link'}
           </button>
         </form>
 
         <p className="auth-switch">
-          {mode === 'signin' ? "Don't have an account?" : 'Already registered?'}{' '}
-          <button
-            type="button"
-            onClick={() => {
-              setMode(mode === 'signin' ? 'signup' : 'signin');
-              setError('');
-              setNotice('');
-            }}
-          >
-            {mode === 'signin' ? 'Create one' : 'Sign in'}
-          </button>
+          {mode === 'forgot' ? (
+            <button
+              type="button"
+              onClick={() => { setMode('signin'); setError(''); setNotice(''); }}
+            >
+              Back to sign in
+            </button>
+          ) : (
+            <>
+              {mode === 'signin' ? "Don't have an account?" : 'Already registered?'}{' '}
+              <button
+                type="button"
+                onClick={() => {
+                  setMode(mode === 'signin' ? 'signup' : 'signin');
+                  setError('');
+                  setNotice('');
+                }}
+              >
+                {mode === 'signin' ? 'Create one' : 'Sign in'}
+              </button>
+            </>
+          )}
         </p>
       </div>
     </div>

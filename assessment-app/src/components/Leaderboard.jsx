@@ -88,6 +88,8 @@ export default function Leaderboard() {
               <tr>
                 <th>Rank</th>
                 <th>Candidate</th>
+                <th>Country</th>
+                <th>University</th>
                 <th>Correct</th>
                 <th>Score</th>
               </tr>
@@ -95,7 +97,7 @@ export default function Leaderboard() {
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan="4" style={{ textAlign: 'center' }}>
+                  <td colSpan="6" style={{ textAlign: 'center' }}>
                     No candidates have completed the assessment yet.
                   </td>
                 </tr>
@@ -111,6 +113,8 @@ export default function Leaderboard() {
                       {entry.displayName}
                       {entry.userId === user?.id && <span className="you-tag">You</span>}
                     </td>
+                    <td className="muted">{entry.country || '—'}</td>
+                    <td className="muted">{entry.university || '—'}</td>
                     <td>{entry.correctCount}</td>
                     <td><strong>{entry.totalScore}</strong> <span className="muted">/ {entry.maxScore}</span></td>
                   </tr>

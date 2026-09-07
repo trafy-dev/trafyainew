@@ -1,6 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import confetti from 'canvas-confetti';
 import { api, apiError } from '../lib/api';
+
+// Brand colors, so the celebration matches the rest of the app instead of
+// looking like a generic confetti plugin default.
+const CONFETTI_COLORS = ['#6C5CE7', '#8B7CFF', '#4F8CFF', '#2FC28C', '#FFD166'];
+
+function celebrate() {
+  const duration = 1800;
+  const end = Date.now() + duration;
+  (function frame() {
+    confetti({ particleCount: 3, angle: 60, spread: 60, origin: { x: 0 }, colors: CONFETTI_COLORS });
+    confetti({ particleCount: 3, angle: 120, spread: 60, origin: { x: 1 }, colors: CONFETTI_COLORS });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  })();
+  confetti({ particleCount: 90, spread: 100, origin: { y: 0.6 }, colors: CONFETTI_COLORS });
+}
 
 const pct = (score, max) => (max > 0 ? Math.round((score / max) * 100) : 0);
 
@@ -27,6 +43,13 @@ export default function Results() {
       }
     })();
     return () => { cancelled = true; };
+  }, []);
+
+  // Celebrate right after finishing a test — once, not on every later visit
+  // to this page (justSubmitted only exists in nav state from the submit redirect).
+  useEffect(() => {
+    if (justSubmitted) celebrate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) return <div className="loader" />;

@@ -1,5 +1,6 @@
 const { supabasePublic, supabaseAdmin } = require('../lib/supabase');
-const { unauthorized, asyncHandler } = require('./errors');
+const { unauthorized, forbidden, asyncHandler } = require('./errors');
+const env = require('../config/env');
 
 /**
  * Small TTL cache so a burst of autosaves from one candidate doesn't make a
@@ -95,4 +96,17 @@ const ensureProfile = asyncHandler(async (req, res, next) => {
   next();
 });
 
-module.exports = { requireAuth, ensureProfile };
+/** True if the authenticated user's email is on the admin allowlist. */
+const isAdminUser = (user) => Boolean(user?.email) && env.adminEmails.includes(user.email.toLowerCase());
+
+/**
+ * Restricts a route to admin accounts. The leaderboard is admin-only, so
+ * this is the actual enforcement — hiding the nav link client-side is not
+ * a security boundary, this is.
+ */
+const requireAdmin = asyncHandler(async (req, res, next) => {
+  if (!isAdminUser(req.user)) throw forbidden('This page is restricted to administrators.');
+  next();
+});
+
+module.exports = { requireAuth, ensureProfile, requireAdmin, isAdminUser };
