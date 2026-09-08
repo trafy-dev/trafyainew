@@ -798,3 +798,37 @@ h1, h2, h3, h4, h5, h6 {
 .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; padding-right: 30px; }
 .modal-sub { color: var(--text-secondary); font-size: 13.5px; margin: 0 0 20px; line-height: 1.5; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+
+/* --- complete-profile screen (wider card, multi-field layout) --- */
+.profile-card { max-width: 560px; }
+.profile-field-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+}
+.profile-links-divider {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-secondary); margin-top: 6px;
+}
+.profile-links-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
+.profile-links-divider span { text-transform: none; font-weight: 500; letter-spacing: normal; color: var(--text-faint); }
+.profile-links-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 15px 16px;
+}
+.profile-link-field span {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 520px) {
+  .profile-field-row, .profile-links-grid { grid-template-columns: 1fr; }
+}
+
+/* --- leaderboard link icons --- */
+.leaderboard-links { display: flex; gap: 6px; flex-wrap: wrap; }
+.leaderboard-link-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--surface-hover); color: var(--text-secondary);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.leaderboard-link-icon:hover { background: var(--surface-active); color: var(--accent-blue); }

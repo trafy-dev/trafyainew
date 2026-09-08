@@ -1,8 +1,42 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
+import { GitBranch, Code2, Briefcase, Camera, Globe, FolderGit2 } from 'lucide-react';
 import { api, apiError, socketUrl } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+
+// lucide-react 1.x dropped brand/logo glyphs, so these are generic
+// stand-ins per platform rather than the actual GitHub/LinkedIn/Instagram logos.
+const LINK_ICONS = [
+  { key: 'githubUrl', label: 'GitHub', icon: GitBranch },
+  { key: 'leetcodeUrl', label: 'LeetCode', icon: Code2 },
+  { key: 'linkedinUrl', label: 'LinkedIn', icon: Briefcase },
+  { key: 'instagramUrl', label: 'Instagram', icon: Camera },
+  { key: 'portfolioUrl', label: 'Portfolio', icon: Globe },
+  { key: 'projectUrl', label: 'Project', icon: FolderGit2 },
+];
+
+function CandidateLinks({ entry }) {
+  const present = LINK_ICONS.filter(({ key }) => entry[key]);
+  if (present.length === 0) return <span className="muted">—</span>;
+  return (
+    <div className="leaderboard-links">
+      {present.map(({ key, label, icon: Icon }) => (
+        <a
+          key={key}
+          href={entry[key]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="leaderboard-link-icon"
+          title={label}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Icon size={15} />
+        </a>
+      ))}
+    </div>
+  );
+}
 
 export default function Leaderboard() {
   const { user } = useAuth();
@@ -90,6 +124,7 @@ export default function Leaderboard() {
                 <th>Candidate</th>
                 <th>Country</th>
                 <th>University</th>
+                <th>Links</th>
                 <th>Correct</th>
                 <th>Score</th>
               </tr>
@@ -97,7 +132,7 @@ export default function Leaderboard() {
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan="6" style={{ textAlign: 'center' }}>
+                  <td colSpan="7" style={{ textAlign: 'center' }}>
                     No candidates have completed the assessment yet.
                   </td>
                 </tr>
@@ -115,6 +150,7 @@ export default function Leaderboard() {
                     </td>
                     <td className="muted">{entry.country || '—'}</td>
                     <td className="muted">{entry.university || '—'}</td>
+                    <td><CandidateLinks entry={entry} /></td>
                     <td>{entry.correctCount}</td>
                     <td><strong>{entry.totalScore}</strong> <span className="muted">/ {entry.maxScore}</span></td>
                   </tr>

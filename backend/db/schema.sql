@@ -14,20 +14,32 @@ create extension if not exists "pgcrypto";
 -- profiles — one row per auth.users, created automatically on signup
 -- ---------------------------------------------------------------------
 create table if not exists public.profiles (
-  id           uuid primary key references auth.users(id) on delete cascade,
-  email        text not null,
-  display_name text,
-  avatar_url   text,
-  country      text,
-  university   text,
-  created_at   timestamptz not null default now(),
-  updated_at   timestamptz not null default now()
+  id            uuid primary key references auth.users(id) on delete cascade,
+  email         text not null,
+  display_name  text,
+  avatar_url    text,
+  country       text,
+  university    text,
+  github_url    text,
+  leetcode_url  text,
+  linkedin_url  text,
+  instagram_url text,
+  portfolio_url text,
+  project_url   text,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
 );
 
 -- Adds the columns above to a profiles table that already existed before
 -- they were introduced. Safe to re-run; a no-op once the columns exist.
-alter table public.profiles add column if not exists country    text;
-alter table public.profiles add column if not exists university text;
+alter table public.profiles add column if not exists country       text;
+alter table public.profiles add column if not exists university    text;
+alter table public.profiles add column if not exists github_url    text;
+alter table public.profiles add column if not exists leetcode_url  text;
+alter table public.profiles add column if not exists linkedin_url  text;
+alter table public.profiles add column if not exists instagram_url text;
+alter table public.profiles add column if not exists portfolio_url text;
+alter table public.profiles add column if not exists project_url   text;
 
 -- Auto-create a profile whenever a user signs up (email OR Google).
 -- Google puts the name in raw_user_meta_data->>'full_name' or 'name'.
@@ -200,7 +212,13 @@ select distinct on (a.user_id)
   a.correct_count,
   a.submitted_at,
   p.country,
-  p.university
+  p.university,
+  p.github_url,
+  p.leetcode_url,
+  p.linkedin_url,
+  p.instagram_url,
+  p.portfolio_url,
+  p.project_url
 from public.assessment_attempts a
 join public.profiles p on p.id = a.user_id
 where a.status = 'submitted'

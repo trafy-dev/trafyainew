@@ -1,19 +1,40 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { GitBranch, Code2, Briefcase, Camera, Globe, FolderGit2 } from 'lucide-react';
 import { api, apiError } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
 const SKIP_KEY = 'trafy_profile_prompt_skipped';
 
+// lucide-react 1.x dropped brand/logo glyphs (Github, Linkedin, Instagram no
+// longer exist as exports), so these use generic icons that read reasonably
+// for each platform instead.
+const LINK_FIELDS = [
+  { key: 'githubUrl', label: 'GitHub', icon: GitBranch, placeholder: 'github.com/yourhandle' },
+  { key: 'leetcodeUrl', label: 'LeetCode', icon: Code2, placeholder: 'leetcode.com/u/yourhandle' },
+  { key: 'linkedinUrl', label: 'LinkedIn', icon: Briefcase, placeholder: 'linkedin.com/in/yourname' },
+  { key: 'instagramUrl', label: 'Instagram', icon: Camera, placeholder: 'instagram.com/yourhandle' },
+  { key: 'portfolioUrl', label: 'Portfolio', icon: Globe, placeholder: 'yoursite.com' },
+  { key: 'projectUrl', label: 'Best project', icon: FolderGit2, placeholder: 'Link to something you built' },
+];
+
 /**
- * One-time prompt (per session) asking for country + university so the
- * admin leaderboard can show them. Skippable — it reappears next login if
- * still unset, but doesn't block using the app.
+ * Shown once per session after login if core profile fields (country/
+ * university) aren't set yet. Everything here is optional and skippable —
+ * it reappears next login only while country/university stay unset.
  */
 export default function CompleteProfile() {
-  const { refreshProfile } = useAuth();
-  const [country, setCountry] = useState('');
-  const [university, setUniversity] = useState('');
+  const { profile, refreshProfile } = useAuth();
+  const [form, setForm] = useState({
+    displayName: profile?.displayName || '',
+    country: profile?.country || '',
+    university: profile?.university || '',
+    githubUrl: profile?.githubUrl || '',
+    leetcodeUrl: profile?.leetcodeUrl || '',
+    linkedinUrl: profile?.linkedinUrl || '',
+    instagramUrl: profile?.instagramUrl || '',
+    portfolioUrl: profile?.portfolioUrl || '',
+    projectUrl: profile?.projectUrl || '',
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [dismissed, setDismissed] = useState(() => sessionStorage.getItem(SKIP_KEY) === '1');
@@ -25,18 +46,20 @@ export default function CompleteProfile() {
     setDismissed(true);
   };
 
+  const setField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!country.trim() || !university.trim()) {
-      setError('Fill in both fields, or skip for now.');
+    if (!form.country.trim() || !form.university.trim()) {
+      setError('Country and college/university are required — everything else is optional.');
       return;
     }
 
     setBusy(true);
     try {
-      await api.patch('/api/auth/me', { country: country.trim(), university: university.trim() });
+      await api.patch('/api/auth/me', form);
       await refreshProfile();
       setDismissed(true);
     } catch (err) {
@@ -48,34 +71,41 @@ export default function CompleteProfile() {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-card">
-        <button type="button" className="modal-close" onClick={skip} aria-label="Skip for now">
-          <X size={18} />
-        </button>
-        <h2 className="modal-title">Just two more things</h2>
-        <p className="modal-sub">Tell us where you're studying — this only takes a second.</p>
+      <div className="auth-card profile-card">
+        <img src="/trafy-logo.png" alt="Trafy" className="auth-logo" />
+        <h1 className="auth-title">Complete your profile</h1>
+        <p className="auth-sub">
+          This shows up wherever recruiters review your assessment. Country and college are
+          required — the links below are optional, add whichever apply.
+        </p>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label className="auth-field">
-            <span>Country</span>
-            <input
-              type="text"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              placeholder="India"
-              autoComplete="country-name"
-            />
+            <span>Name</span>
+            <input type="text" value={form.displayName} onChange={setField('displayName')} placeholder="Ada Lovelace" />
           </label>
-          <label className="auth-field">
-            <span>University</span>
-            <input
-              type="text"
-              value={university}
-              onChange={(e) => setUniversity(e.target.value)}
-              placeholder="IIT Madras"
-              autoComplete="organization"
-            />
-          </label>
+
+          <div className="profile-field-row">
+            <label className="auth-field">
+              <span>Country *</span>
+              <input type="text" value={form.country} onChange={setField('country')} placeholder="India" required />
+            </label>
+            <label className="auth-field">
+              <span>College / University *</span>
+              <input type="text" value={form.university} onChange={setField('university')} placeholder="IIT Madras" required />
+            </label>
+          </div>
+
+          <div className="profile-links-divider">Links <span>(optional)</span></div>
+
+          <div className="profile-links-grid">
+            {LINK_FIELDS.map(({ key, label, icon: Icon, placeholder }) => (
+              <label className="auth-field profile-link-field" key={key}>
+                <span><Icon size={14} /> {label}</span>
+                <input type="text" value={form[key]} onChange={setField(key)} placeholder={placeholder} />
+              </label>
+            ))}
+          </div>
 
           {error && <div className="auth-alert auth-alert--error">{error}</div>}
 
@@ -84,7 +114,7 @@ export default function CompleteProfile() {
               Skip for now
             </button>
             <button type="submit" className="btn btn--primary btn--md" disabled={busy}>
-              {busy ? 'Saving…' : 'Save'}
+              {busy ? 'Saving…' : 'Save profile'}
             </button>
           </div>
         </form>
