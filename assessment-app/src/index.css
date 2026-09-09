@@ -1094,7 +1094,11 @@ h1, h2, h3, h4, h5, h6 {
 .assessment-hub-subheading {
   font-family: 'Bricolage Grotesque', sans-serif;
   font-size: 20px;
-  margin: 0 0 4px;
+  /* Baked in directly rather than relying on the .mt-4 utility class: this
+     rule's own shorthand margin would silently reset any top margin the
+     utility class set, since it's declared later in the stylesheet and
+     shorthand margin overwrites all four sides. */
+  margin: 40px 0 8px;
 }
 
 .assessment-hub-grid {

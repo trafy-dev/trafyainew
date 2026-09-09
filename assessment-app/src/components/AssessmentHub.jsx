@@ -75,7 +75,7 @@ export default function AssessmentHub() {
         </div>
       )}
 
-      <h2 className="assessment-hub-subheading mt-4">Track assessments</h2>
+      <h2 className="assessment-hub-subheading">Track assessments</h2>
       <div className="assessment-hub-grid">
         {tracks.map(renderCard)}
       </div>
