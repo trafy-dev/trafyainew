@@ -1142,3 +1142,9 @@ h1, h2, h3, h4, h5, h6 {
     grid-template-columns: 1fr;
   }
 }
+
+.results-section__title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 20px;
+  margin: 0 0 16px;
+}
