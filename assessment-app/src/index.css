@@ -1002,3 +1002,96 @@ h1, h2, h3, h4, h5, h6 {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- dashboard overview: main bento + side rail --- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+.dashboard-siderail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rail-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.rail-card__title {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+
+/* Decorative brand panel — the favicon glyph over a soft violet glow. */
+.rail-hero {
+  position: relative;
+  background: linear-gradient(155deg, #1D1533 0%, #2B1F52 60%, #3A2470 100%);
+  border-radius: 16px;
+  padding: 32px 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+.rail-hero__glow {
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle at 50% 30%, rgba(139,124,255,0.45), transparent 60%);
+  pointer-events: none;
+}
+.rail-hero__mark {
+  position: relative;
+  width: 56px;
+  height: auto;
+  margin-bottom: 18px;
+  filter: drop-shadow(0 8px 20px rgba(126, 20, 255, 0.5));
+}
+.rail-hero__tag {
+  position: relative;
+  margin: 0;
+  color: #fff;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.rail-tips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.rail-tips__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.rail-tips__item svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--accent-blue);
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
