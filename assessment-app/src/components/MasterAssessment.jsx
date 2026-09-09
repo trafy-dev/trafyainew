@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { Sun, Moon } from 'lucide-react';
 import { api, apiError } from '../lib/api';
@@ -17,6 +17,7 @@ const AUTOSAVE_DEBOUNCE_MS = 800;
  */
 export default function MasterAssessment() {
   const navigate = useNavigate();
+  const { slug = 'cohort-26' } = useParams();
 
   const [state, setState] = useState({ phase: 'loading', error: null, gate: null });
   const [attempt, setAttempt] = useState(null);
@@ -86,7 +87,7 @@ export default function MasterAssessment() {
     let cancelled = false;
     (async () => {
       try {
-        const { data } = await api.get('/api/assessment/attempt');
+        const { data } = await api.get(`/api/assessment/attempt?slug=${encodeURIComponent(slug)}`);
         if (cancelled) return;
         if (data.attempt) applyPayload(data);
         else setState({ phase: 'gate', error: null, gate: data });
@@ -95,7 +96,7 @@ export default function MasterAssessment() {
       }
     })();
     return () => { cancelled = true; };
-  }, [applyPayload]);
+  }, [applyPayload, slug]);
 
   const submit = useCallback(
     async (reason = 'manual') => {
@@ -173,7 +174,7 @@ export default function MasterAssessment() {
   const startAttempt = async () => {
     setState((s) => ({ ...s, phase: 'loading' }));
     try {
-      const { data } = await api.post('/api/assessment/attempt');
+      const { data } = await api.post('/api/assessment/attempt', { slug });
       applyPayload(data);
     } catch (err) {
       const info = apiError(err);
@@ -223,12 +224,13 @@ export default function MasterAssessment() {
 
   if (state.phase === 'gate') {
     const g = state.gate || {};
+    const meta = g.assessment || {};
     const exhausted = g.canStart === false;
     return (
       <section className="dashboard-section active">
         <header className="section-header">
-          <h1>Master Assessment</h1>
-          <p>45 multiple-choice questions and 2 DSA challenges, in 90 minutes.</p>
+          <h1>{meta.title || 'Assessment'}</h1>
+          <p>{meta.description || `${meta.mcqCount ?? ''} multiple-choice questions.`}</p>
         </header>
         <div className="bento-wrap assessment-bento">
           <div className="bento">
@@ -238,11 +240,13 @@ export default function MasterAssessment() {
             </div>
             <div className="bento__cell">
               <span className="bento__label">Questions</span>
-              <span className="bento__value">45 MCQ + 2 DSA</span>
+              <span className="bento__value">
+                {meta.mcqCount ?? ''} MCQ{meta.dsaCount > 0 ? ` + ${meta.dsaCount} DSA` : ''}
+              </span>
             </div>
             <div className="bento__cell">
               <span className="bento__label">Time limit</span>
-              <span className="bento__value">90 mins</span>
+              <span className="bento__value">{meta.durationMinutes ?? ''} mins</span>
             </div>
           </div>
 
@@ -354,9 +358,24 @@ export default function MasterAssessment() {
                 </button>
                 <button
                   className="btn btn--primary btn--lg"
-                  onClick={() => (index < mcqs.length - 1 ? setIndex(index + 1) : setIsDsaPhase(true))}
+                  onClick={() => {
+                    if (index < mcqs.length - 1) setIndex(index + 1);
+                    else if (dsa.length > 0) setIsDsaPhase(true);
+                    else {
+                      const unanswered = mcqs.length - answeredCount;
+                      const msg = unanswered > 0
+                        ? `You have ${unanswered} unanswered question${unanswered === 1 ? '' : 's'}. Submit anyway?`
+                        : 'Submit your assessment? This cannot be undone.';
+                      if (window.confirm(msg)) submit();
+                    }
+                  }}
+                  disabled={submitting}
                 >
-                  {index < mcqs.length - 1 ? 'Next' : 'Go to DSA'}
+                  {index < mcqs.length - 1
+                    ? 'Next'
+                    : dsa.length > 0
+                      ? 'Go to DSA'
+                      : submitting ? 'Submitting…' : 'Submit'}
                 </button>
               </div>
             </div>
