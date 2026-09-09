@@ -24,42 +24,45 @@ const hashId = (prefix, text) =>
 
 async function loadMcqs() {
   const mod = await import(pathToFileURL(MCQ_SOURCE).href);
-  const all = mod.allQuestions;
-  if (!Array.isArray(all) || all.length === 0) {
-    throw new Error(`No questions exported from ${MCQ_SOURCE}`);
+  const tracks = mod.tracks;
+  if (!tracks || typeof tracks !== 'object' || Object.keys(tracks).length === 0) {
+    throw new Error(`No "tracks" exported from ${MCQ_SOURCE}`);
   }
 
   const seen = new Set();
   const rows = [];
 
-  for (const q of all) {
-    if (q.kind !== 'mcq') continue;
-    if (!Array.isArray(q.options) || q.options.length < 2) {
-      console.warn(`[seed] skipping "${String(q.prompt).slice(0, 50)}" — bad options`);
-      continue;
-    }
-    if (!Number.isInteger(q.correctIndex) || q.correctIndex < 0 || q.correctIndex >= q.options.length) {
-      console.warn(`[seed] skipping "${String(q.prompt).slice(0, 50)}" — bad correctIndex`);
-      continue;
-    }
+  for (const [trackName, questions] of Object.entries(tracks)) {
+    for (const q of questions) {
+      if (q.kind !== 'mcq') continue;
+      if (!Array.isArray(q.options) || q.options.length < 2) {
+        console.warn(`[seed] skipping "${String(q.prompt).slice(0, 50)}" — bad options`);
+        continue;
+      }
+      if (!Number.isInteger(q.correctIndex) || q.correctIndex < 0 || q.correctIndex >= q.options.length) {
+        console.warn(`[seed] skipping "${String(q.prompt).slice(0, 50)}" — bad correctIndex`);
+        continue;
+      }
 
-    const id = hashId('mcq', q.prompt);
-    if (seen.has(id)) {
-      console.warn(`[seed] duplicate prompt skipped: "${String(q.prompt).slice(0, 50)}"`);
-      continue;
-    }
-    seen.add(id);
+      const id = hashId('mcq', q.prompt);
+      if (seen.has(id)) {
+        console.warn(`[seed] duplicate prompt skipped: "${String(q.prompt).slice(0, 50)}"`);
+        continue;
+      }
+      seen.add(id);
 
-    rows.push({
-      id,
-      kind: 'mcq',
-      topic: q.topic || null,
-      prompt: q.prompt,
-      options: q.options,
-      correct_index: q.correctIndex,
-      points: 10,
-      active: true,
-    });
+      rows.push({
+        id,
+        kind: 'mcq',
+        topic: q.topic || null,
+        track: trackName,
+        prompt: q.prompt,
+        options: q.options,
+        correct_index: q.correctIndex,
+        points: 10,
+        active: true,
+      });
+    }
   }
 
   return rows;
