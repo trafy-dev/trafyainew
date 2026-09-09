@@ -815,7 +815,7 @@ const aiml = [
   }
 ];
 
-const tracks = {
+export const tracks = {
   "core-cs": coreCS,
   "cpp": cpp,
   "java": java,
