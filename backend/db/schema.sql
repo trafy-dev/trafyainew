@@ -95,6 +95,10 @@ create table if not exists public.questions (
   created_at    timestamptz not null default now()
 );
 
+-- Which of the 6 topic tracks (core-cs, cpp, java, python, webdev, aiml) an
+-- MCQ belongs to. NULL for DSA questions and any MCQ not part of a track.
+alter table public.questions add column if not exists track text;
+
 create index if not exists questions_kind_active_idx on public.questions (kind, active);
 
 -- ---------------------------------------------------------------------
@@ -115,9 +119,24 @@ create table if not exists public.assessments (
   created_at       timestamptz not null default now()
 );
 
+-- Which track this assessment draws its MCQs from (NULL for Master, which
+-- draws from every track).
+alter table public.assessments add column if not exists track text;
+
 insert into public.assessments (slug, title, description)
 values ('cohort-26', 'Trafy Master Assessment — Cohort ''26',
         '45 multiple-choice questions and 2 DSA challenges.')
+on conflict (slug) do nothing;
+
+insert into public.assessments
+  (slug, title, description, duration_minutes, mcq_count, dsa_count, max_attempts, mcq_points, dsa_points, track)
+values
+  ('track-core-cs', 'Core CS Assessment', '20 multiple-choice questions on OS, DBMS, networks and DSA fundamentals.', 20, 20, 0, 3, 10, 50, 'core-cs'),
+  ('track-cpp',     'C++ Assessment',     '20 multiple-choice questions on C++.',                                    20, 20, 0, 3, 10, 50, 'cpp'),
+  ('track-java',    'Java Assessment',    '20 multiple-choice questions on Java.',                                   20, 20, 0, 3, 10, 50, 'java'),
+  ('track-python',  'Python Assessment',  '20 multiple-choice questions on Python.',                                 20, 20, 0, 3, 10, 50, 'python'),
+  ('track-webdev',  'Web Dev Assessment', '20 multiple-choice questions on web development.',                        20, 20, 0, 3, 10, 50, 'webdev'),
+  ('track-aiml',    'AI/ML Assessment',   '20 multiple-choice questions on AI and machine learning.',                 20, 20, 0, 3, 10, 50, 'aiml')
 on conflict (slug) do nothing;
 
 -- ---------------------------------------------------------------------
