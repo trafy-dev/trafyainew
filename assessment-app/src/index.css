@@ -87,7 +87,10 @@ h1, h2, h3, h4, h5, h6 {
 /* Dashboard Layout */
 .dashboard-layout {
   display: flex;
+  /* dvh tracks the real visible viewport on mobile (vh alone includes space
+     behind the browser's address bar); vh stays as the fallback. */
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
 }
 
@@ -206,6 +209,7 @@ h1, h2, h3, h4, h5, h6 {
 .dashboard-main {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 40px 64px;
   position: relative;
   background: var(--bg-dark);
@@ -896,11 +900,17 @@ h1, h2, h3, h4, h5, h6 {
     position: fixed;
     top: 0;
     left: 0;
+    /* 100vh on mobile includes space behind the browser's address bar, so
+       the real visible viewport is shorter — dvh tracks it accurately.
+       Falls back to vh on browsers that don't support dvh. */
     height: 100vh;
+    height: 100dvh;
     z-index: 200;
     transform: translateX(-100%);
     transition: transform 0.28s ease;
     box-shadow: var(--shadow-lg);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .sidebar.is-open { transform: translateX(0); }
   .sidebar__close { display: flex; }
