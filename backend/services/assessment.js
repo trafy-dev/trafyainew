@@ -34,6 +34,43 @@ async function getAssessment(slug = env.assessmentSlug) {
   return data;
 }
 
+/** Looks an assessment up by its own numeric id — used when scoring an
+ *  attempt, where we must use THAT attempt's assessment config, not
+ *  whichever assessment the caller happens to be working with. */
+async function getAssessmentById(id) {
+  const { data, error } = await supabaseAdmin
+    .from('assessments')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw fromSupabase(error, 'load assessment');
+  if (!data) throw notFound(`Assessment id ${id} not found.`);
+  return data;
+}
+
+/** Public list of every active assessment, for the assessment hub page. */
+async function listAssessments() {
+  const { data, error } = await supabaseAdmin
+    .from('assessments')
+    .select('slug, title, description, mcq_count, dsa_count, duration_minutes, max_attempts, track')
+    .eq('active', true)
+    .order('id');
+
+  if (error) throw fromSupabase(error, 'list assessments');
+
+  return data.map((a) => ({
+    slug: a.slug,
+    title: a.title,
+    description: a.description,
+    mcqCount: a.mcq_count,
+    dsaCount: a.dsa_count,
+    durationMinutes: a.duration_minutes,
+    maxAttempts: a.max_attempts,
+    isTrack: Boolean(a.track),
+  }));
+}
+
 /** Strips correct answers. This shape is the ONLY thing sent to a browser. */
 function toPublicMcq(question, index) {
   return {
@@ -123,11 +160,15 @@ async function startOrResume(userId, slug) {
 
   const { data: pool, error: poolError } = await supabaseAdmin
     .from('questions')
-    .select('id, kind')
+    .select('id, kind, track')
     .eq('active', true);
   if (poolError) throw fromSupabase(poolError, 'load question pool');
 
-  const mcqPool = pool.filter((q) => q.kind === 'mcq').map((q) => q.id);
+  // Master (assessment.track is null) draws from every track, exactly as
+  // before; a track assessment only draws from its own 20 questions.
+  const mcqPool = pool
+    .filter((q) => q.kind === 'mcq' && (!assessment.track || q.track === assessment.track))
+    .map((q) => q.id);
   const dsaPool = pool.filter((q) => q.kind === 'dsa').map((q) => q.id);
 
   if (mcqPool.length < assessment.mcq_count || dsaPool.length < assessment.dsa_count) {
@@ -275,7 +316,7 @@ async function saveProgress(userId, attemptId, { answers, dsaCode }) {
  * hole, and for the MCQ double-count in the old implementation.
  */
 async function finaliseAttempt(attempt, status) {
-  const assessment = await getAssessment();
+  const assessment = await getAssessmentById(attempt.assessment_id);
 
   const mcqIds = attempt.mcq_question_ids || [];
   const dsaIds = attempt.dsa_question_ids || [];
@@ -369,8 +410,8 @@ async function submitAttempt(userId, attemptId) {
   return finaliseAttempt(attempt, expired ? 'expired' : 'submitted');
 }
 
-async function listResults(userId) {
-  const assessment = await getAssessment();
+async function listResults(userId, slug) {
+  const assessment = await getAssessment(slug);
   const { data, error } = await supabaseAdmin
     .from('assessment_attempts')
     .select('*')
@@ -430,6 +471,8 @@ async function getLeaderboard(limit = 50) {
 
 module.exports = {
   getAssessment,
+  getAssessmentById,
+  listAssessments,
   startOrResume,
   getActiveAttempt,
   buildAttemptPayload,
