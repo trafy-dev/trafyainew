@@ -240,5 +240,7 @@ select distinct on (a.user_id)
   p.project_url
 from public.assessment_attempts a
 join public.profiles p on p.id = a.user_id
+join public.assessments ass on ass.id = a.assessment_id
 where a.status = 'submitted'
+  and ass.track is null  -- Master only; track assessments are self-practice
 order by a.user_id, a.total_score desc, a.submitted_at asc;
