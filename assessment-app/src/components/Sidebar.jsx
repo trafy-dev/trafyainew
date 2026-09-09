@@ -19,11 +19,9 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
-        {/* trafy-logo.png is a white wordmark meant for a dark background —
-            invisible on this light theme's white sidebar, so the mark here
-            is the colored favicon glyph plus a plain-text wordmark instead. */}
-        <img src="/favicon.svg" alt="" className="sidebar__mark" aria-hidden="true" />
-        <span className="sidebar__wordmark">Trafy</span>
+        {/* trafy-logo.png is pure white (built for the old dark theme), so
+            it's inverted to black here to stay visible on this light sidebar. */}
+        <img src="/trafy-logo.png" alt="Trafy" className="sidebar__logo" />
       </div>
 
       <nav className="sidebar__nav">

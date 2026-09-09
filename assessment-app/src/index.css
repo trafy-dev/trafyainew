@@ -109,17 +109,14 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0 16px;
 }
 
-.sidebar__mark {
-  height: 28px;
+.sidebar__logo {
+  height: 26px;
   width: auto;
   display: block;
-}
-
-.sidebar__wordmark {
-  font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
+  /* trafy-logo.png is pure white with alpha — invert makes it black so it
+     reads on this light theme's white sidebar, using the real asset as-is
+     rather than a separate text substitute. */
+  filter: invert(1);
 }
 
 .sidebar__nav {
