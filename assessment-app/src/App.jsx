@@ -9,6 +9,7 @@ import Results from './components/Results';
 import Login from './components/Login';
 import ResetPassword from './components/ResetPassword';
 import CompleteProfile from './components/CompleteProfile';
+import Profile from './components/Profile';
 
 function Shell() {
   const { user, loading, passwordRecovery, profile, isAdmin } = useAuth();
@@ -44,6 +45,7 @@ function Shell() {
             element={isAdmin ? <Leaderboard /> : <Navigate to="/" replace />}
           />
           <Route path="/results" element={<Results />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

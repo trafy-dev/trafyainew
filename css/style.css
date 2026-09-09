@@ -164,6 +164,8 @@ section[id]{scroll-margin-top:88px}
 .nav__links a:hover{color:var(--text)}
 
 .nav__cta{flex-shrink:0}
+.nav__actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.nav__login{flex-shrink:0}
 
 .nav__toggle{display:none;flex-direction:column;gap:5px;width:26px;cursor:pointer}
 .nav__toggle span{height:2px;background:var(--text);border-radius:2px;transition:transform .25s var(--ease), opacity .25s var(--ease)}
@@ -180,7 +182,7 @@ section[id]{scroll-margin-top:88px}
 
 @media (max-width:860px){
   .nav__links{display:none}
-  .nav__cta{display:none}
+  .nav__actions{display:none}
   .nav__toggle{display:flex}
   .nav__mobile{display:flex}
 }

@@ -102,12 +102,24 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
   margin-bottom: 40px;
   padding: 0 16px;
 }
 
-.sidebar__logo {
-  height: 32px;
+.sidebar__mark {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
+.sidebar__wordmark {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .sidebar__nav {
@@ -159,7 +171,12 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   gap: 12px;
   padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.2s ease;
 }
+.user-profile:hover { background: var(--surface-hover); }
 
 .avatar {
   width: 40px;
