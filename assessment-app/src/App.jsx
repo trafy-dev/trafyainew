@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import MasterAssessment from './components/MasterAssessment';
+import AssessmentHub from './components/AssessmentHub';
 import Leaderboard from './components/Leaderboard';
 import Results from './components/Results';
 import Login from './components/Login';
@@ -39,7 +40,8 @@ function Shell() {
       <main className="dashboard-main">
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/assessment" element={<MasterAssessment />} />
+          <Route path="/assessment" element={<AssessmentHub />} />
+          <Route path="/assessment/:slug" element={<MasterAssessment />} />
           <Route
             path="/leaderboard"
             element={isAdmin ? <Leaderboard /> : <Navigate to="/" replace />}

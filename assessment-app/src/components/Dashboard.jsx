@@ -98,7 +98,7 @@ export default function Dashboard() {
               View my results
             </button>
           ) : (
-            <button className="btn btn--primary btn--lg mt-4" onClick={() => navigate('/assessment')}>
+            <button className="btn btn--primary btn--lg mt-4" onClick={() => navigate('/assessment/cohort-26')}>
               {summary?.inProgress ? 'Resume assessment' : 'Start assessment'}
             </button>
           )}
