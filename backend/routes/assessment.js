@@ -17,7 +17,7 @@ const actionLimiter = rateLimit({ windowMs: 60 * 1000, max: 20, standardHeaders:
 router.get(
   '/attempt',
   asyncHandler(async (req, res) => {
-    const assessment = await service.getAssessment();
+    const assessment = await service.getAssessment(req.query.slug);
     const attempt = await service.getActiveAttempt(req.user.id, assessment.id);
     if (!attempt || attempt.status !== 'in_progress') {
       const used = await service.countAttempts(req.user.id, assessment.id);
@@ -26,6 +26,16 @@ router.get(
         attemptsUsed: used,
         maxAttempts: assessment.max_attempts,
         canStart: used < assessment.max_attempts,
+        // So the "start" screen can render a real title/description/counts
+        // for whichever assessment this is, instead of hardcoded copy.
+        assessment: {
+          slug: assessment.slug,
+          title: assessment.title,
+          description: assessment.description,
+          mcqCount: assessment.mcq_count,
+          dsaCount: assessment.dsa_count,
+          durationMinutes: assessment.duration_minutes,
+        },
       });
     }
     res.json(await service.buildAttemptPayload(attempt, assessment, { resumed: true }));
@@ -78,11 +88,19 @@ router.post(
   })
 );
 
-/** This candidate's own past attempts. */
+/** This candidate's own past attempts for one assessment (default: Master). */
 router.get(
   '/results',
   asyncHandler(async (req, res) => {
-    res.json(await service.listResults(req.user.id));
+    res.json(await service.listResults(req.user.id, req.query.slug));
+  })
+);
+
+/** Every active assessment's public metadata — Master + the 6 tracks. */
+router.get(
+  '/list',
+  asyncHandler(async (req, res) => {
+    res.json({ assessments: await service.listAssessments() });
   })
 );
 
