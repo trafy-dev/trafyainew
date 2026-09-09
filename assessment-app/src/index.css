@@ -1038,30 +1038,24 @@ h1, h2, h3, h4, h5, h6 {
 /* Decorative brand panel — the favicon glyph over a soft violet glow. */
 .rail-hero {
   position: relative;
-  background: linear-gradient(155deg, #1D1533 0%, #2B1F52 60%, #3A2470 100%);
+  background: linear-gradient(155deg, #F1EEFC 0%, #E7E1FA 60%, #DCD3F7 100%);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 32px 24px;
   overflow: hidden;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-card);
   text-align: center;
 }
 .rail-hero__glow {
   position: absolute;
   inset: -40%;
-  background: radial-gradient(circle at 50% 30%, rgba(139,124,255,0.45), transparent 60%);
+  background: radial-gradient(circle at 50% 30%, rgba(108,92,231,0.16), transparent 60%);
   pointer-events: none;
-}
-.rail-hero__mark {
-  position: relative;
-  width: 56px;
-  height: auto;
-  margin-bottom: 18px;
-  filter: drop-shadow(0 8px 20px rgba(126, 20, 255, 0.5));
 }
 .rail-hero__tag {
   position: relative;
   margin: 0;
-  color: #fff;
+  color: var(--text-primary);
   font-family: 'Bricolage Grotesque', sans-serif;
   font-size: 17px;
   font-weight: 600;

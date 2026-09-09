@@ -107,7 +107,6 @@ export default function Dashboard() {
         <aside className="dashboard-siderail">
           <div className="rail-hero">
             <div className="rail-hero__glow" />
-            <img src="/favicon.svg" alt="" className="rail-hero__mark" aria-hidden="true" />
             <p className="rail-hero__tag">Prove what you can build,<br />not just what you've memorised.</p>
           </div>
 
