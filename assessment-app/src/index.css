@@ -539,7 +539,14 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  overflow: hidden;
+  /* overflow:hidden clips ALL directions, including horizontal — on a
+     narrow screen the table (Rank/Candidate/Country/University/Links/
+     Correct/Score, or Attempt/Date/MCQ/DSA/... ) is wider than the wrapper,
+     and there was no way to reach the clipped columns. overflow-x:auto
+     lets it scroll sideways instead; the table's own rounded corners
+     (inherited via border-collapse) keep the look intact when not scrolled. */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-card);
 }
 
