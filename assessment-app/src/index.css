@@ -30,6 +30,15 @@
   --shadow-lg: 0 30px 70px -24px rgba(76, 62, 150, 0.22);
 }
 
+/* Without this, `height: 100dvh` + padding on a container renders TALLER than
+   the viewport (content-box adds padding on top of the height). That pushed
+   the sidebar drawer's footer and the bottom of the scrollable dashboard
+   content below the fold on mobile, where nothing could scroll them back
+   into view. */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   background-color: var(--bg-dark);
   margin: 0;
@@ -598,17 +607,26 @@ h1, h2, h3, h4, h5, h6 {
    Auth screens, save indicator, results and leaderboard additions
    ========================================================================== */
 
+/* body is overflow:hidden, so this must be its own scroll container. That
+   needs a CONSTRAINED height (min-height would just grow past the viewport
+   and get clipped with no way to scroll). align-items:center is avoided
+   deliberately: when a flex item is centered and overflows, the part above
+   the container's start edge cannot be scrolled to. `margin:auto` on the
+   card centers it when it fits and collapses to 0 when it doesn't. */
 .auth-screen {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   padding: 24px;
   background:
     radial-gradient(1000px 600px at 50% -10%, rgba(108,92,231,0.14), transparent 60%),
     var(--bg-dark);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
+.auth-screen > * { margin: auto; }
 
 .auth-card {
   width: 100%;
@@ -794,13 +812,21 @@ h1, h2, h3, h4, h5, h6 {
 .auth-forgot-link:hover { color: var(--accent-blue); text-decoration: underline; }
 
 /* --- complete-profile modal --- */
+/* Same trap as .auth-screen: a fixed, centered overlay with no overflow-y
+   makes a tall card (the 9-field CompleteProfile form on a phone) overflow
+   off BOTH the top and bottom with nothing able to scroll it into view.
+   flex-start + margin:auto on the card centers short cards and scrolls
+   tall ones. */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 100;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: flex-start; justify-content: center;
   background: rgba(32, 26, 51, 0.45);
   backdrop-filter: blur(3px);
   padding: 24px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
+.modal-overlay > * { margin: auto; }
 .modal-card {
   position: relative;
   width: 100%; max-width: 400px;
@@ -914,6 +940,22 @@ h1, h2, h3, h4, h5, h6 {
   }
   .sidebar.is-open { transform: translateX(0); }
   .sidebar__close { display: flex; }
+
+  /* On desktop .sidebar__nav uses flex:1 to push the footer to the bottom
+     of a tall sidebar. In the mobile drawer that same flex-grow/shrink can
+     fight with overflow-y:auto in inconsistent ways across browsers —
+     shrinking the nav instead of letting the drawer overflow and scroll.
+     margin-top:auto on the footer gets the same "pinned to bottom when
+     there's room" result via a different mechanism: it collapses to 0
+     instead of shrinking content when the drawer is too short, so overflow
+     and scrolling take over cleanly instead of fighting for space. */
+  .sidebar__nav {
+    flex: none;
+  }
+  .sidebar__footer {
+    flex-shrink: 0;
+    margin-top: auto;
+  }
 
   .sidebar__backdrop {
     display: block;
