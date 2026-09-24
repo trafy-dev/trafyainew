@@ -244,3 +244,65 @@ join public.assessments ass on ass.id = a.assessment_id
 where a.status = 'submitted'
   and ass.track is null  -- Master only; track assessments are self-practice
 order by a.user_id, a.total_score desc, a.submitted_at asc;
+
+
+-- =====================================================================
+-- Employability Index assessment (additive; safe to re-run)
+-- =====================================================================
+-- Difficulty lets an assessment draw a balanced DSA pair (1 easy + 1 medium).
+alter table public.questions add column if not exists difficulty text;
+
+-- category: 'master' | 'employability' | 'track'. Master and Employability both
+-- draw from every track (track IS NULL), so `track` alone can no longer tell
+-- them apart.
+alter table public.assessments add column if not exists category text;
+alter table public.assessments add column if not exists email_results boolean not null default false;
+update public.assessments set category = case when track is null then 'master' else 'track' end
+  where category is null;
+
+alter table public.assessment_attempts add column if not exists topic_breakdown jsonb;
+alter table public.assessment_attempts add column if not exists result_emailed_at timestamptz;
+
+insert into public.assessments
+  (slug, title, description, duration_minutes, mcq_count, dsa_count, max_attempts, mcq_points, dsa_points, track, category, email_results)
+values
+  ('employability-index', 'Employability Index Assessment',
+   '45 multiple-choice questions across core CS, languages, web, AI/ML and aptitude, plus 2 coding challenges. Your Employability Index report is emailed to you.',
+   90, 45, 2, 3, 10, 50, null, 'employability', true)
+on conflict (slug) do update
+  set category = 'employability', email_results = true, track = null;
+
+-- The leaderboard stays Master-only.
+create or replace view public.leaderboard as
+select distinct on (a.user_id)
+  a.user_id,
+  p.display_name,
+  a.total_score,
+  a.max_score,
+  a.correct_count,
+  a.submitted_at,
+  p.country,
+  p.university,
+  p.github_url,
+  p.leetcode_url,
+  p.linkedin_url,
+  p.instagram_url,
+  p.portfolio_url,
+  p.project_url
+from public.assessment_attempts a
+join public.profiles p on p.id = a.user_id
+join public.assessments ass on ass.id = a.assessment_id
+where a.status = 'submitted'
+  and ass.category = 'master'
+order by a.user_id, a.total_score desc, a.submitted_at asc;
+
+
+-- =====================================================================
+-- Sequential questions + proctoring (additive; safe to re-run)
+-- =====================================================================
+-- current_index: position in the combined MCQ-then-DSA sequence. The server
+-- only ever sends the current question and advances this on completion.
+alter table public.assessment_attempts add column if not exists current_index integer not null default 0;
+alter table public.assessment_attempts add column if not exists violations integer not null default 0;
+alter table public.assessment_attempts add column if not exists violation_log jsonb not null default '[]';
+alter table public.assessment_attempts add column if not exists review_marks jsonb not null default '[]';

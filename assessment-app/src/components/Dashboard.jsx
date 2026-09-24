@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Sparkles, RefreshCw, Save, Puzzle } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { useLms } from '../lms/LmsContext';
+import ClassroomOverview from '../lms/pages/ClassroomOverview';
 
 // True statements about how the assessment actually works (autosave, partial
 // credit, per-attempt question shuffling, best-of-N scoring) rather than
@@ -17,6 +19,7 @@ const TIPS = [
 export default function Dashboard() {
   const navigate = useNavigate();
   const { displayName } = useAuth();
+  const lms = useLms();
   const [summary, setSummary] = useState(null);
 
   useEffect(() => {
@@ -123,6 +126,12 @@ export default function Dashboard() {
           </div>
         </aside>
       </div>
+
+      {lms.available && (
+        <div className="lms dashboard-classroom">
+          <ClassroomOverview />
+        </div>
+      )}
     </section>
   );
 }

@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, PenTool, Trophy, History, LogOut, UserCircle, Menu, X } from 'lucide-react';
+import {
+  LayoutDashboard, PenTool, Trophy, History, LogOut, UserCircle, Menu, X,
+  MessagesSquare, FolderOpen, CalendarDays, ClipboardList, GraduationCap, BookOpen, Users,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLms } from '../lms/LmsContext';
 
 const initials = (name = '') =>
   name
@@ -13,6 +17,7 @@ const initials = (name = '') =>
 
 export default function Sidebar() {
   const { displayName, avatarUrl, user, signOut, isAdmin } = useAuth();
+  const lms = useLms();
   const [isOpen, setIsOpen] = useState(false);
 
   const link = ({ isActive }) => `sidebar__item ${isActive ? 'active' : ''}`;
@@ -49,8 +54,7 @@ export default function Sidebar() {
 
       <aside className={`sidebar ${isOpen ? 'is-open' : ''}`}>
         <div className="sidebar__brand">
-          {/* trafy-logo.png is pure white (built for the old dark theme), so
-              it's inverted to black here to stay visible on this light sidebar. */}
+          {/* trafy-logo.png is pure white, which is exactly what the dark sidebar needs. */}
           <img src="/trafy-logo.png" alt="Trafy" className="sidebar__logo" />
           <button
             type="button"
@@ -66,6 +70,8 @@ export default function Sidebar() {
           <NavLink to="/" className={link} end>
             <LayoutDashboard className="icon" /> Overview
           </NavLink>
+
+          <div className="sidebar__label">Assessments</div>
           <NavLink to="/assessment" className={link}>
             <PenTool className="icon" /> Assessment
           </NavLink>
@@ -77,6 +83,26 @@ export default function Sidebar() {
           <NavLink to="/results" className={link}>
             <History className="icon" /> Results
           </NavLink>
+
+          {lms.available && (
+            <>
+              <div className="sidebar__label">Classroom</div>
+              <NavLink to="/chat" className={link}><MessagesSquare className="icon" /> Chat</NavLink>
+              <NavLink to="/resources" className={link}><FolderOpen className="icon" /> Resources</NavLink>
+              <NavLink to="/calendar" className={link}><CalendarDays className="icon" /> Calendar</NavLink>
+              <NavLink to="/assignments" className={link}><ClipboardList className="icon" /> Assignments</NavLink>
+              <NavLink to="/grades" className={link}><GraduationCap className="icon" /> Grades</NavLink>
+              {lms.isStaff && (
+                <>
+                  <div className="sidebar__label">Manage</div>
+                  <NavLink to="/courses" className={link}><BookOpen className="icon" /> Courses</NavLink>
+                  {lms.isAdmin && <NavLink to="/users" className={link}><Users className="icon" /> Users &amp; roles</NavLink>}
+                </>
+              )}
+            </>
+          )}
+
+          <div className="sidebar__label">Account</div>
           <NavLink to="/profile" className={link}>
             <UserCircle className="icon" /> Profile
           </NavLink>

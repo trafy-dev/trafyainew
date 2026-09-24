@@ -65,26 +65,79 @@ router.patch(
   })
 );
 
+const formatResult = (attempt, assessment) => ({
+  attemptId: attempt.id,
+  status: attempt.status,
+  mcqScore: attempt.mcq_score,
+  dsaScore: attempt.dsa_score,
+  totalScore: attempt.total_score,
+  maxScore: attempt.max_score,
+  correctCount: attempt.correct_count,
+  dsaStatus: attempt.dsa_status,
+  dsaDetail: attempt.dsa_detail || [],
+  resultEmailed: Boolean(assessment.email_results), // report is being emailed
+});
+
+/** Completes the current question and returns the NEXT one (only it). */
+router.post(
+  '/attempt/:id/advance',
+  saveLimiter,
+  asyncHandler(async (req, res) => {
+    const { position, answer, code } = req.body || {};
+    res.json(await service.advance(req.user.id, req.params.id, { position, answer, code }));
+  })
+);
+
+/** Opens an already-reached question. Upcoming questions are refused. */
+router.get(
+  '/attempt/:id/question/:position',
+  saveLimiter,
+  asyncHandler(async (req, res) => {
+    res.json(await service.viewQuestion(req.user.id, req.params.id, parseInt(req.params.position, 10)));
+  })
+);
+
+/** Marks/unmarks a reached question for review. */
+router.post(
+  '/attempt/:id/review',
+  saveLimiter,
+  asyncHandler(async (req, res) => {
+    const { position, marked } = req.body || {};
+    res.json(await service.setReview(req.user.id, req.params.id, position, Boolean(marked)));
+  })
+);
+
+/** Focus/fullscreen violation reported by the browser; the server counts strikes. */
+router.post(
+  '/attempt/:id/violation',
+  actionLimiter,
+  asyncHandler(async (req, res) => {
+    const out = await service.recordViolation(req.user.id, req.params.id, req.body && req.body.type);
+    if (out.terminated) {
+      const assessment = await service.getAssessmentById(out.result.assessment_id);
+      req.app.get('io').emit('leaderboard_update', { at: new Date().toISOString() });
+      return res.json({
+        violations: out.violations,
+        max: out.max,
+        terminated: true,
+        result: formatResult(out.result, assessment),
+      });
+    }
+    res.json({ violations: out.violations, max: out.max, terminated: false });
+  })
+);
+
 /** Final submit. Scoring happens here, server-side, and only here. */
 router.post(
   '/attempt/:id/submit',
   actionLimiter,
   asyncHandler(async (req, res) => {
     const attempt = await service.submitAttempt(req.user.id, req.params.id);
+    const assessment = await service.getAssessmentById(attempt.assessment_id);
 
     req.app.get('io').emit('leaderboard_update', { at: new Date().toISOString() });
 
-    res.json({
-      attemptId: attempt.id,
-      status: attempt.status,
-      mcqScore: attempt.mcq_score,
-      dsaScore: attempt.dsa_score,
-      totalScore: attempt.total_score,
-      maxScore: attempt.max_score,
-      correctCount: attempt.correct_count,
-      dsaStatus: attempt.dsa_status,
-      dsaDetail: attempt.dsa_detail || [],
-    });
+    res.json(formatResult(attempt, assessment));
   })
 );
 

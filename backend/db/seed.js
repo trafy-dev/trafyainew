@@ -15,7 +15,8 @@ const path = require('path');
 const { pathToFileURL } = require('url');
 
 const { supabaseAdmin } = require('../lib/supabase');
-const dsaQuestions = require('./dsa-questions');
+const dsaQuestions = [...require('./dsa-questions'), ...require('./dsa-extra')];
+const mcqExtra = require('./mcq-extra');
 
 const MCQ_SOURCE = path.resolve(__dirname, '../../assessment-app/src/questions.js');
 
@@ -24,7 +25,9 @@ const hashId = (prefix, text) =>
 
 async function loadMcqs() {
   const mod = await import(pathToFileURL(MCQ_SOURCE).href);
-  const tracks = mod.tracks;
+  // Base bank (assessment-app/src/questions.js) plus the extra pool in mcq-extra.js.
+  const tracks = { ...mod.tracks };
+  for (const [name, extra] of Object.entries(mcqExtra)) tracks[name] = [...(tracks[name] || []), ...extra];
   if (!tracks || typeof tracks !== 'object' || Object.keys(tracks).length === 0) {
     throw new Error(`No "tracks" exported from ${MCQ_SOURCE}`);
   }
@@ -72,7 +75,8 @@ function loadDsa() {
   return dsaQuestions.map((q) => ({
     id: hashId('dsa', q.slug),
     kind: 'dsa',
-    topic: 'DSA',
+    topic: q.topic || 'DSA',
+    difficulty: q.difficulty || null,
     title: q.title,
     description: q.description,
     template: q.template,
@@ -101,6 +105,9 @@ async function main() {
   const all = [...mcqs, ...dsa];
 
   console.log(`[seed] ${mcqs.length} MCQ + ${dsa.length} DSA = ${all.length} questions`);
+
+  const byTrack = mcqs.reduce((m, q) => ({ ...m, [q.track]: (m[q.track] || 0) + 1 }), {});
+  console.log('[seed] MCQs per track:', JSON.stringify(byTrack));
 
   if (mcqs.length < 45) {
     console.warn(`[seed] WARNING: only ${mcqs.length} MCQs — the assessment needs 45.`);

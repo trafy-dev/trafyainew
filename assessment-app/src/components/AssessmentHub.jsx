@@ -33,8 +33,9 @@ export default function AssessmentHub() {
   if (error) return <div className="auth-alert auth-alert--error">{error}</div>;
   if (!assessments) return <div className="loader" />;
 
-  const master = assessments.find((a) => !a.isTrack);
-  const tracks = assessments.filter((a) => a.isTrack);
+  const master = assessments.find((a) => a.category === 'master');
+  const employability = assessments.find((a) => a.category === 'employability');
+  const tracks = assessments.filter((a) => a.category === 'track');
 
   const renderCard = (a) => {
     const status = statusBySlug[a.slug];
@@ -43,7 +44,8 @@ export default function AssessmentHub() {
     const exhausted = status ? !status.canStart && !inProgress : false;
 
     return (
-      <div className="assessment-card" key={a.slug}>
+      <div className={`assessment-card ${a.category === 'employability' ? 'assessment-card--featured' : ''}`} key={a.slug}>
+        {a.category === 'employability' && <span className="assessment-card__badge">Report emailed to you</span>}
         <h3>{a.title}</h3>
         <p className="assessment-card__desc">{a.description}</p>
         <div className="assessment-card__meta">
@@ -66,12 +68,18 @@ export default function AssessmentHub() {
     <section className="dashboard-section active">
       <header className="section-header">
         <h1>Assessments</h1>
-        <p>The Master Assessment counts toward the leaderboard. Track assessments are self-practice.</p>
+        <p>The Master Assessment counts toward the leaderboard. The Employability Index emails you a detailed report. Track assessments are self-practice.</p>
       </header>
 
       {master && (
         <div className="assessment-hub-grid assessment-hub-grid--single mt-4">
           {renderCard(master)}
+        </div>
+      )}
+
+      {employability && (
+        <div className="assessment-hub-grid assessment-hub-grid--single mt-4">
+          {renderCard(employability)}
         </div>
       )}
 

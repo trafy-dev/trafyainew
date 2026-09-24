@@ -25,6 +25,7 @@ export default function Results() {
   const location = useLocation();
   const justSubmitted = location.state?.justSubmitted || null;
   const timedOut = location.state?.reason === 'timeout';
+  const endedByViolation = location.state?.reason === 'violation';
 
   // justSubmitted carries no slug today — it always comes from Master or a
   // track attempt's own submit redirect, and both show the same hero shape,
@@ -75,7 +76,9 @@ export default function Results() {
       {justSubmitted && (
         <div className="result-hero">
           <span className="result-hero__label">
-            {timedOut ? 'Time expired — submitted automatically' : 'Submitted'}
+            {endedByViolation
+              ? 'Ended after repeated tab or full-screen violations. Submitted with your answers so far'
+              : timedOut ? 'Time expired — submitted automatically' : 'Submitted'}
           </span>
           <div className="result-hero__score">
             {justSubmitted.totalScore}
@@ -86,6 +89,11 @@ export default function Results() {
             {justSubmitted.dsaScore > 0 && <> · DSA {justSubmitted.dsaScore} pts</>} ·
             {' '}{pct(justSubmitted.totalScore, justSubmitted.maxScore)}%
           </div>
+          {justSubmitted.resultEmailed && (
+            <div className="result-hero__email">
+              Your detailed Employability Index report is on its way to your inbox.
+            </div>
+          )}
           {justSubmitted.dsaStatus === 'unavailable' && (
             <div className="auth-alert auth-alert--warn" style={{ marginTop: 16 }}>
               Your DSA code could not be executed, so it scored 0. This is a platform

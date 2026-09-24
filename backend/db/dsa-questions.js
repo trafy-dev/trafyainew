@@ -13,6 +13,8 @@
 module.exports = [
   {
     slug: 'maximal-path-quality',
+    difficulty: 'hard',
+    topic: 'Graphs',
     title: 'Maximum Path Quality of a Graph',
     functionName: 'maximalPathQuality',
     description:
@@ -28,6 +30,8 @@ module.exports = [
   },
   {
     slug: 'palindrome-number',
+    difficulty: 'easy',
+    topic: 'Math',
     title: 'Palindrome Number',
     functionName: 'isPalindrome',
     description:
@@ -44,6 +48,8 @@ module.exports = [
   },
   {
     slug: 'maximal-rectangle',
+    difficulty: 'hard',
+    topic: 'Stack / DP',
     title: 'Maximal Rectangle',
     functionName: 'maximalRectangle',
     description:
@@ -62,6 +68,8 @@ module.exports = [
   },
   {
     slug: 'generate-parentheses',
+    difficulty: 'medium',
+    topic: 'Backtracking',
     title: 'Generate Parentheses',
     functionName: 'generateParenthesis',
     description:
@@ -76,6 +84,8 @@ module.exports = [
   },
   {
     slug: 'find-min-rotated',
+    difficulty: 'medium',
+    topic: 'Binary Search',
     title: 'Find Minimum in Rotated Sorted Array',
     functionName: 'findMin',
     description:
@@ -92,6 +102,8 @@ module.exports = [
   },
   {
     slug: 'next-greater-element-i',
+    difficulty: 'easy',
+    topic: 'Stack',
     title: 'Next Greater Element I',
     functionName: 'nextGreaterElement',
     description:
@@ -106,6 +118,8 @@ module.exports = [
   },
   {
     slug: 'two-sum',
+    difficulty: 'easy',
+    topic: 'Hashing',
     title: 'Two Sum',
     functionName: 'twoSum',
     description:

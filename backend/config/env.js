@@ -42,6 +42,18 @@ const env = {
     .map((o) => o.trim())
     .filter(Boolean),
 
+  // Result emails (Resend, https://resend.com). Without a key, emails are
+  // rendered and logged but not sent, so local dev and tests never fail on it.
+  resendApiKey: optional('RESEND_API_KEY'),
+  emailFrom: optional('EMAIL_FROM', 'Trafy <results@trafy.ai>'),
+  emailReplyTo: optional('EMAIL_REPLY_TO', 'aaru@trafy.ai'),
+  // Absolute URLs used inside emails (logo, buttons, footer links).
+  siteUrl: optional('SITE_URL', 'https://www.trafy.ai').replace(/\/$/, ''),
+  appUrl: optional('APP_URL', 'http://localhost:5173').replace(/\/$/, ''),
+
+  // Focus/fullscreen violations tolerated before an attempt is auto-submitted.
+  maxViolations: intOr('MAX_VIOLATIONS', 3),
+
   assessmentSlug: optional('ASSESSMENT_SLUG', 'cohort-26'),
 
   // Accounts allowed to see the leaderboard. Everyone else gets a 403 from
